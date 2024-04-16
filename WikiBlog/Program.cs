@@ -21,6 +21,9 @@ builder.Services.AddDbContext<DbContextWikiBlog>(o => {
 
 //builder.Services.AddScoped<DbContextWikiBlog>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
+
 
 // Pour éviter les références circulaire
 builder.Services.AddControllers().AddJsonOptions(x =>

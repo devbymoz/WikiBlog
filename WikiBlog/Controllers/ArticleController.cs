@@ -26,16 +26,7 @@ namespace WikiBlog.Controllers
         [ProducesResponseType(200)]
         public async Task<ActionResult> CreateArticle(CreateArticleDTO articleDTO)
         {
-            var article = new Article
-            {
-                Title = articleDTO.Title,
-                Content = articleDTO.Content,
-                Priotity = articleDTO.Priotity,
-                User = articleDTO.User,
-                Theme = articleDTO.Theme,
-            };
-
-            await articleRepository.CreateArticle(article);
+            await articleRepository.CreateArticle(articleDTO);
 
             return Ok("Votre article a bien été créé");
         }

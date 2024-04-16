@@ -15,8 +15,18 @@ namespace WikiBlog.Repositories
             this.dbContextWikiBlog = dbContextWikiBlog;
         }
 
-        public async Task<bool> CreateArticle(Article article)
+        public async Task<bool> CreateArticle(CreateArticleDTO articleDTO)
         {
+            var article = new Article
+            {
+                Title = articleDTO.Title,
+                Content = articleDTO.Content,
+                Priotity = articleDTO.Priotity,
+                CreationDate = DateTime.Now,
+                User = articleDTO.User,
+                Theme = articleDTO.Theme,
+            };
+
             try
             {
                 await dbContextWikiBlog.Articles.AddAsync(article);
@@ -67,6 +77,7 @@ namespace WikiBlog.Repositories
                 return false;
             }
 
+            article.UpdateDate = DateTime.Now;
             article.Title = paramArticleDTO.Title;
             article.Content = paramArticleDTO.Content;
             article.Theme = paramArticleDTO.Theme;

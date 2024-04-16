@@ -5,7 +5,7 @@ namespace WikiBlog.Interfaces.IRepositories
 {
     public interface IArticleRepository
     {
-        public Task<bool> CreateArticle(Article article);
+        public Task<bool> CreateArticle(CreateArticleDTO articleDTO);
         public Task<List<Article>?> GetAllArticles();
         public Task<Article?> GetArticleById(int id);
         public Task<bool?> UpdateArticle(UpdateArticleDTO paramArticleDTO);
