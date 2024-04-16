@@ -50,7 +50,6 @@ namespace WikiBlog.Controllers
             return Ok(articles);
         }
 
-
         /// <summary>
         /// Récupération d'un article grace à son identifiant
         /// </summary>
@@ -96,7 +95,7 @@ namespace WikiBlog.Controllers
         {
             await articleRepository.DeleteArticle(id);
 
-            return Ok("Ärticle supprimé");
+            return Ok("Article supprimé");
         }
 
 
