@@ -1,0 +1,6 @@
+@WikiBlog_HostAddress = http://localhost:5055
+
+GET {{WikiBlog_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
