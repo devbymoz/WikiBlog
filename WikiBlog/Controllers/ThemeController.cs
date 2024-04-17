@@ -26,9 +26,15 @@ namespace WikiBlog.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> CreateTheme(CreateThemeDTO themeDTO)
         {
-            await themeRepository.CreateTheme(themeDTO);
+            bool checkingCreation = await themeRepository.CreateTheme(themeDTO);
+
+            if (checkingCreation == false)
+            {
+                return StatusCode(500);
+            }
 
             return Ok("Le thème a bien été créé");
         }
@@ -57,7 +63,7 @@ namespace WikiBlog.Controllers
         /// </summary>
         /// <param name="id">int : identifiant du thème</param>
         /// <returns></returns>
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetThemeById(int id)
@@ -72,16 +78,25 @@ namespace WikiBlog.Controllers
             return Ok(theme);
         }
 
+
+
         /// <summary>
         /// Modification d'un thème
         /// </summary>
+        /// <param name="id">int : Identifiant du thème</param>
         /// <param name="themeDTO"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult> UpdateTheme(CreateThemeDTO themeDTO)
+        [ProducesResponseType(204)]
+        public async Task<ActionResult> UpdateTheme(int id, CreateThemeDTO themeDTO)
         {
-            await themeRepository.UpdateTheme(themeDTO);
+            bool? checkingUpdate = await themeRepository.UpdateTheme(id, themeDTO);
+
+            if (checkingUpdate == false)
+            {
+                return NoContent();
+            }
 
             return Ok("Article modifié avec succes");
         }
@@ -91,11 +106,17 @@ namespace WikiBlog.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> DeleteTheme(int id)
         {
-            await themeRepository.DeleteTheme(id);
+            bool? checkingDelete = await themeRepository.DeleteTheme(id);
+
+            if (checkingDelete == false)
+            {
+                return StatusCode(500);
+            }
 
             return Ok("Thème supprimé");
         }

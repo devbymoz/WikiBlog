@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WikiBlog.DTOs.Articles;
 using WikiBlog.Interfaces.IRepositories;
@@ -23,11 +24,19 @@ namespace WikiBlog.Controllers
         /// <param name="articleDTO">Article</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
+        [ProducesResponseType(401)]
         public async Task<ActionResult> CreateArticle(CreateArticleDTO articleDTO)
         {
-            await articleRepository.CreateArticle(articleDTO);
+            bool checkingCreation = await articleRepository.CreateArticle(articleDTO);
 
+            if (checkingCreation == false)
+            {
+                return StatusCode(500);
+            }
+              
             return Ok("Votre article a bien été créé");
         }
 
@@ -40,14 +49,14 @@ namespace WikiBlog.Controllers
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetAllArticles()
         {
-            List<Article>? articles = await articleRepository.GetAllArticles();
+            List<AllArticleDTO>? articlesDTO = await articleRepository.GetAllArticles();
 
-            if (articles == null || articles.Count == 0)
+            if (articlesDTO == null || articlesDTO.Count == 0)
             {
                 return NoContent();
             }
 
-            return Ok(articles);
+            return Ok(articlesDTO);
         }
 
         /// <summary>
@@ -55,31 +64,39 @@ namespace WikiBlog.Controllers
         /// </summary>
         /// <param name="id">int : identifiant de l'article</param>
         /// <returns></returns>
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetArticleById(int id)
         {
-            var article = await articleRepository.GetArticleById(id);
+            var articleDto = await articleRepository.GetArticleById(id);
 
-            if (article == null)
+            if (articleDto == null)
             {
                 return NoContent();
             }
 
-            return Ok(article);
+            return Ok(articleDto);
         }
 
         /// <summary>
         /// Modification d'un article
         /// </summary>
+        /// <param name="id">int : Identifiant de l'article</param>
         /// <param name="articleDTO"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult> UpdateArticle(UpdateArticleDTO articleDTO)
+        [ProducesResponseType(204)]
+
+        public async Task<ActionResult> UpdateArticle(int id, UpdateArticleDTO articleDTO)
         {
-            await articleRepository.UpdateArticle(articleDTO);
+            bool? checkingUpdate = await articleRepository.UpdateArticle(id, articleDTO);
+
+            if (checkingUpdate == false)
+            {
+                return NoContent();
+            }
 
             return Ok("Article modifié avec succes");
         }
@@ -89,11 +106,17 @@ namespace WikiBlog.Controllers
         /// </summary>
         /// <param name="id">int : identifiant de l'article</param>
         /// <returns></returns>
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> DeleteArticle(int id)
         {
-            await articleRepository.DeleteArticle(id);
+            bool? checkingDelete = await articleRepository.DeleteArticle(id);
+
+            if (checkingDelete == false)
+            {
+                return StatusCode(500);
+            }
 
             return Ok("Article supprimé");
         }

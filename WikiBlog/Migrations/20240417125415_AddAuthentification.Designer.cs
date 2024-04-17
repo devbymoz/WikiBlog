@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WikiBlog.Config;
 
@@ -11,9 +12,11 @@ using WikiBlog.Config;
 namespace WikiBlog.Migrations
 {
     [DbContext(typeof(DbContextWikiBlog))]
-    partial class DbContextWikiBlogModelSnapshot : ModelSnapshot
+    [Migration("20240417125415_AddAuthentification")]
+    partial class AddAuthentification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,9 +170,6 @@ namespace WikiBlog.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -322,25 +322,26 @@ namespace WikiBlog.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppUserId")
-                        .IsUnique()
-                        .HasFilter("[AppUserId] IS NOT NULL");
 
                     b.ToTable("Users");
 
                     b.HasData(
                         new
                         {
-                            Id = 1
+                            Id = 1,
+                            DateOfBirth = new DateOnly(1986, 9, 24)
                         },
                         new
                         {
-                            Id = 2
+                            Id = 2,
+                            DateOfBirth = new DateOnly(1990, 2, 10)
                         });
                 });
 
@@ -431,21 +432,6 @@ namespace WikiBlog.Migrations
                     b.Navigation("Article");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WikiBlog.Models.User", b =>
-                {
-                    b.HasOne("WikiBlog.Models.AppUser", "AppUser")
-                        .WithOne("User")
-                        .HasForeignKey("WikiBlog.Models.User", "AppUserId");
-
-                    b.Navigation("AppUser");
-                });
-
-            modelBuilder.Entity("WikiBlog.Models.AppUser", b =>
-                {
-                    b.Navigation("User")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("WikiBlog.Models.Article", b =>

@@ -1,14 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WikiBlog.Const;
 using WikiBlog.DTOs.Articles;
 using WikiBlog.DTOs.Comments;
 using WikiBlog.Interfaces.IRepositories;
+using WikiBlog.Models;
 using WikiBlog.Repositories;
 
 namespace WikiBlog.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize(Roles = Roles.ADMIN)]
     public class CommentController : ControllerBase
     {
         private ICommentRepository commentRepository;
@@ -24,25 +28,52 @@ namespace WikiBlog.Controllers
         /// <param name="commentDTO">Commentaire</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
+        [ProducesResponseType(401)]
         public async Task<ActionResult> CreateComment(CreateCommentDTO commentDTO)
         {
-            await commentRepository.CreateComment(commentDTO);
+            bool checkingCreation = await commentRepository.CreateComment(commentDTO);
+
+            if (checkingCreation == false)
+            {
+                return StatusCode(500);
+            }
 
             return Ok("Votre commentaire a bien été créé");
         }
 
         /// <summary>
-        /// Récupération de tous les commentaires d'un utilisateur
+        /// Récupération de la liste des commentaire avec leur auteur
         /// </summary>
-        /// <param name="idUser">int : Identifiant utilisateur</param>
         /// <returns></returns>
-        [HttpGet("idUser")]
+        [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
-        public async Task<ActionResult> GetAllCommentByUser(int idUser)
+        public async Task<ActionResult> GetAllComments()
         {
-            var commentByUser = await commentRepository.GetAllCommentByUser(idUser);
+            List<AllCommentDTO>? commentsDTO = await commentRepository.GetAllComment();
+
+            if (commentsDTO == null || commentsDTO.Count == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok(commentsDTO);
+        }
+
+        /// <summary>
+        /// Récupération de tous les commentaires d'un utilisateur
+        /// </summary>
+        /// <param name="id">int : Identifiant utilisateur</param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(204)]
+        public async Task<ActionResult> GetAllCommentByUser(int id)
+        {
+            var commentByUser = await commentRepository.GetAllCommentByUser(id);
 
             if (commentByUser == null)
             {
@@ -55,14 +86,14 @@ namespace WikiBlog.Controllers
         /// <summary>
         /// Récupération de tous les commentaires d'un article
         /// </summary>
-        /// <param name="idArticle">int : Identifiant de l'article</param>
+        /// <param name="id">int : Identifiant de l'article</param>
         /// <returns></returns>
-        [HttpGet("idArticle")]
+        [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
-        public async Task<ActionResult> GetAllCommentByArticle(int idArticle)
+        public async Task<ActionResult> GetAllCommentByArticle(int id)
         {
-            var commentByArticle = await commentRepository.GetAllCommentByUser(idArticle);
+            var commentByArticle = await commentRepository.GetAllCommentByArticle(id);
 
             if (commentByArticle == null)
             {
@@ -77,7 +108,7 @@ namespace WikiBlog.Controllers
         /// </summary>
         /// <param name="id">int : identifiant du commentaire</param>
         /// <returns></returns>
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetCommentById(int id)
@@ -95,13 +126,20 @@ namespace WikiBlog.Controllers
         /// <summary>
         /// Modification d'un commentaire
         /// </summary>
+        /// <param name="id">int : Identifiant du commentaire</param>
         /// <param name="commentDTO"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult> UpdateComment(UpdateCommentDTO commentDTO)
+        [ProducesResponseType(500)]
+        public async Task<ActionResult> UpdateComment(int id, UpdateCommentDTO commentDTO)
         {
-            await commentRepository.UpdateComment(commentDTO);
+            bool? checkingUpdate = await commentRepository.UpdateComment(id, commentDTO);
+
+            if (checkingUpdate == false)
+            {
+                return StatusCode(500);
+            } 
 
             return Ok("Commemtaire modifié avec succes");
         }
@@ -111,11 +149,17 @@ namespace WikiBlog.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         [ProducesResponseType(200)]
+        [ProducesResponseType(500)]
         public async Task<ActionResult> DeleteComment(int id)
         {
-            await commentRepository.DeleteComment(id);
+            bool? checkingDelete = await commentRepository.DeleteComment(id);
+
+            if (checkingDelete == false)
+            {
+                return StatusCode(500);
+            }
 
             return Ok("Commentaire supprimé");
         }

@@ -66,9 +66,9 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> UpdateTheme(CreateThemeDTO themeDTO)
+        public async Task<bool?> UpdateTheme(int id, CreateThemeDTO themeDTO)
         {
-            Theme? theme = await dbContextWikiBlog.Themes.FindAsync(themeDTO.Id);
+            Theme? theme = await dbContextWikiBlog.Themes.FindAsync(id);
 
             if (theme == null)
             {

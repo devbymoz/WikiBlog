@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using WikiBlog.Models;
 
 namespace WikiBlog.Config
 {
-    public class DbContextWikiBlog : DbContext
+    public class DbContextWikiBlog : IdentityDbContext<AppUser>
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Article> Articles { get; set; }
@@ -23,6 +24,15 @@ namespace WikiBlog.Config
                 //optionsBuilder.UseInMemoryDatabase("ExoDbInMemory");
                 optionsBuilder.LogTo(Console.WriteLine);
             }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            User user1 = new User { Id = 1 };
+            User user2 = new User { Id = 2 };
+            modelBuilder.Entity<User>().HasData(new List<User> { user1, user2 });
+
+            base.OnModelCreating(modelBuilder);
         }
 
 

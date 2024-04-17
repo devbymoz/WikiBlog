@@ -10,7 +10,7 @@ namespace WikiBlog.Interfaces.IRepositories
         public Task<bool> CreateTheme(CreateThemeDTO themeDTO);
         public Task<List<Theme>?> GetAllThemes();
         public Task<Theme?> GetThemeById(int id);
-        public Task<bool?> UpdateTheme(CreateThemeDTO themeDTO);
+        public Task<bool?> UpdateTheme(int id, CreateThemeDTO themeDTO);
         public Task<bool?> DeleteTheme(int id);
     }
 }

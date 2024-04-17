@@ -22,8 +22,8 @@ namespace WikiBlog.Repositories
             {
                 Content = commentDTO.Content,
                 CreationDate = DateTime.Now,
-                Article = commentDTO.Article,
-                User = commentDTO.User
+                ArticleId = commentDTO.ArticleId,
+                UserId = 1
             };
 
             try
@@ -36,6 +36,35 @@ namespace WikiBlog.Repositories
             catch (Exception e)
             {
                 throw e;
+            }
+        }
+
+        public async Task<List<AllCommentDTO>?> GetAllComment()
+        {
+            try
+            {
+                List<Comment>? comments = await dbContextWikiBlog.Comments
+                    .Include(u => u.User)
+                    .ToListAsync();
+
+                List<AllCommentDTO> commentsDTO = new List<AllCommentDTO>();
+
+                foreach (var comment in comments)
+                {
+                    commentsDTO.Add(new AllCommentDTO
+                    {
+                        Id = comment.Id,
+                        Content = comment.Content,
+                        UserId= comment.UserId,
+                        UserName = comment.User.AppUser.UserName
+                    });
+                }
+
+                return commentsDTO;
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
@@ -87,9 +116,9 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> UpdateComment(UpdateCommentDTO paramCommentDTO)
+        public async Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO)
         {
-            Comment? comment = await dbContextWikiBlog.Comments.FindAsync(paramCommentDTO.Id);
+            Comment? comment = await dbContextWikiBlog.Comments.FindAsync(id);
 
             if (comment == null)
             {

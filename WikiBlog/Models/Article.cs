@@ -11,7 +11,7 @@ namespace WikiBlog.Models
         public DateTime? UpdateDate { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
-        public Priotity Priotity { get; set; }
+        public Priotity Priotity { get; set; } = Priotity.Normal;
         public int UserId { get; set; }
         public User User { get; set; }
 

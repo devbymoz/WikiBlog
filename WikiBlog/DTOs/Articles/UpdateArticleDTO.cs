@@ -8,7 +8,6 @@ namespace WikiBlog.DTOs.Articles
         public int Id { get; }
         public string Title { get; set; }
         public string Content { get; set; }
-        public Priotity Priotity { get; set; }
-        public Theme Theme { get; set; }
+        public int ThemeId { get; set; }
     }
 }

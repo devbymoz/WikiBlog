@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WikiBlog.Config;
 
@@ -11,9 +12,11 @@ using WikiBlog.Config;
 namespace WikiBlog.Migrations
 {
     [DbContext(typeof(DbContextWikiBlog))]
-    partial class DbContextWikiBlogModelSnapshot : ModelSnapshot
+    [Migration("20240417143438_ChangeDateOnly")]
+    partial class ChangeDateOnly
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -325,6 +328,12 @@ namespace WikiBlog.Migrations
                     b.Property<string>("AppUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppUserId")
@@ -336,11 +345,13 @@ namespace WikiBlog.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1
+                            Id = 1,
+                            DateOfBirth = new DateTime(1986, 9, 24, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
-                            Id = 2
+                            Id = 2,
+                            DateOfBirth = new DateTime(1990, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 

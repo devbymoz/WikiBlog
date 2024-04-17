@@ -1,14 +1,25 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using WikiBlog.Config;
 using WikiBlog.Interfaces.IRepositories;
+using WikiBlog.Models;
 using WikiBlog.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddAuthorization();
+
+builder.Services.AddIdentityApiEndpoints<AppUser>(c =>
+{
+    //c.Password
+}) // config mdp ...
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<DbContextWikiBlog>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -19,11 +30,9 @@ builder.Services.AddDbContext<DbContextWikiBlog>(o => {
     o.UseSqlServer(builder.Configuration.GetConnectionString("DbContextWikiBlog"));
 });
 
-//builder.Services.AddScoped<DbContextWikiBlog>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
-
 
 // Pour éviter les références circulaire
 builder.Services.AddControllers().AddJsonOptions(x =>
@@ -37,9 +46,23 @@ builder.Services.AddSwaggerGen(c => {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
+
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    c.OperationFilter<SecurityRequirementsOperationFilter>();
+
 });
 
+
+
 var app = builder.Build();
+
+app.MapIdentityApi<AppUser>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

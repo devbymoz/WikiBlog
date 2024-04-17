@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using WikiBlog.Config;
 using WikiBlog.DTOs.Articles;
+using WikiBlog.DTOs.Comments;
 using WikiBlog.Interfaces.IRepositories;
 using WikiBlog.Models;
 
@@ -21,10 +23,9 @@ namespace WikiBlog.Repositories
             {
                 Title = articleDTO.Title,
                 Content = articleDTO.Content,
-                Priotity = articleDTO.Priotity,
                 CreationDate = DateTime.Now,
-                User = articleDTO.User,
-                Theme = articleDTO.Theme,
+                UserId = 1,
+                ThemeId = articleDTO.ThemeId,
             };
 
             try
@@ -40,13 +41,30 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<List<Article>?> GetAllArticles()
+        public async Task<List<AllArticleDTO>?> GetAllArticles()
         {
             try
             {
-                List<Article> articles = await dbContextWikiBlog.Articles.ToListAsync();
+                List<Article> articles = await dbContextWikiBlog.Articles
+                    .Include(t => t.Theme)
+                    .ToListAsync();
 
-                return articles;
+                List<AllArticleDTO> articlesDTO = new List<AllArticleDTO>();
+
+                foreach (var article in articles)
+                {
+                    articlesDTO.Add(new AllArticleDTO
+                    {
+                        Id = article.Id,
+                        CreationDate = article.CreationDate,
+                        Title = article.Title,
+                        Content = article.Content,
+                        Priotity = article.Priotity,
+                        NameTheme = article.Theme.Name,
+                    }); 
+                }
+
+                return articlesDTO;
             }
             catch (Exception e)
             {
@@ -54,13 +72,48 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<Article?> GetArticleById(int id)
+        public async Task<GetSingleArticleDTO?> GetArticleById(int id)
         {
             try
             {
-                Article? article = await dbContextWikiBlog.Articles.FirstOrDefaultAsync(a => a.Id == id);
+                Article? article = await dbContextWikiBlog.Articles
+                    .Include(u => u.User)
+                    .Include(c => c.Comments)
+                    .FirstOrDefaultAsync(a => a.Id == id);
 
-                return article;
+                if (article == null)
+                {
+                    return null;
+                }
+
+                List<AllCommentDTO>? articleComments = new List<AllCommentDTO>();
+
+                if (article.Comments != null)
+                {
+                    foreach (var articleComment in article.Comments)
+                    {
+                        articleComments.Add(new AllCommentDTO
+                        {
+                            Id = articleComment.Id,
+                            Content = articleComment.Content
+                        });
+                    }
+                }
+
+                GetSingleArticleDTO articleDTO = new GetSingleArticleDTO 
+                { 
+                    Id = article.Id,
+                    Title = article.Title,
+                    Content = article.Content,
+                    Priotity = article.Priotity,
+                    AuthorArticleId = article.UserId,
+                    AuthorArticleName = article.User.AppUser.UserName,
+                    Theme = article.Theme,
+                    CommentsDTO = articleComments
+                };
+
+
+                return articleDTO;
             }
             catch (Exception e)
             {
@@ -68,9 +121,9 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> UpdateArticle(UpdateArticleDTO paramArticleDTO)
+        public async Task<bool?> UpdateArticle(int id, UpdateArticleDTO paramArticleDTO)
         {
-            Article? article = await dbContextWikiBlog.Articles.FindAsync(paramArticleDTO.Id);
+            Article? article = await dbContextWikiBlog.Articles.FindAsync(id);
 
             if (article == null)
             {
@@ -80,8 +133,7 @@ namespace WikiBlog.Repositories
             article.UpdateDate = DateTime.Now;
             article.Title = paramArticleDTO.Title;
             article.Content = paramArticleDTO.Content;
-            article.Theme = paramArticleDTO.Theme;
-            article.Priotity = paramArticleDTO.Priotity;
+            article.ThemeId = paramArticleDTO.ThemeId;
 
             try
             {
