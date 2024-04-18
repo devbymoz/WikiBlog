@@ -134,65 +134,68 @@ namespace WikiBlog.Repositories
                 return false;
             }
 
-            if (article.UserId !=  userId || isAdmin == false)
+            if (article.UserId ==  userId || isAdmin == true)
+            {
+                article.UpdateDate = DateTime.Now;
+                article.Title = paramArticleDTO.Title;
+                article.Content = paramArticleDTO.Content;
+                article.ThemeId = paramArticleDTO.ThemeId;
+
+                try
+                {
+                    await dbContextWikiBlog.SaveChangesAsync();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            } 
+            else
             {
                 return false;
-            }
-
-            article.UpdateDate = DateTime.Now;
-            article.Title = paramArticleDTO.Title;
-            article.Content = paramArticleDTO.Content;
-            article.ThemeId = paramArticleDTO.ThemeId;
-
-            try
-            {
-                await dbContextWikiBlog.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-
+            }    
         }
 
         public async Task<bool?> DeleteArticle(int id, int userId, bool isAdmin)
         {
-            try
+            Article? article = await dbContextWikiBlog.Articles
+                                    .Include(c => c.Comments)
+                                    .FirstOrDefaultAsync(a => a.Id == id);         
+            
+            if (article == null)
             {
-                Article? article = await dbContextWikiBlog.Articles
-                    .Include(c => c.Comments)
-                    .FirstOrDefaultAsync(a => a.Id == id);
+               return false;
+            }
 
-                if (article == null)
+            if (article.UserId == userId || isAdmin == true)
+            {
+                try
                 {
-                    return false;
-                }
+                    List<Comment>? comments = article.Comments;
 
-                if (article.UserId != userId || isAdmin == false)
-                {
-                    return false;
-                }
-
-                List<Comment>? comments = article.Comments;
-
-                if (comments != null)
-                {
-                    foreach (var comment in comments)
+                    if (comments != null)
                     {
-                        dbContextWikiBlog.Comments.Remove(comment);
+                        foreach (var comment in comments)
+                        {
+                            dbContextWikiBlog.Comments.Remove(comment);
+                        }
                     }
+
+                    dbContextWikiBlog.Articles.Remove(article);
+                    await dbContextWikiBlog.SaveChangesAsync();
+
+                    return true;
                 }
-
-                dbContextWikiBlog.Articles.Remove(article);
-                await dbContextWikiBlog.SaveChangesAsync();
-
-                return true;
+                catch (Exception e)
+                {
+                    throw e;
+                }
             }
-            catch (Exception e)
+            else
             {
-                throw e;
-            }
+                return false;
+            }     
         }
 
         public async Task<bool?> ChangePriorityArticle(int id, Priotity priotity)

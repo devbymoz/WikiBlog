@@ -11,8 +11,8 @@ namespace WikiBlog.Interfaces.IRepositories
         public Task<User?> GetAllCommentByUser(int idUser);
         public Task<Article?> GetAllCommentByArticle(int idArticle);
         public Task<Comment?> GetCommentbyId(int id);
-        public Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO, int userId);
-        public Task<bool?> DeleteComment(int id, int userId);
+        public Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO, int userId, bool isAdmin);
+        public Task<bool?> DeleteComment(int id, int userId, bool isAdmin);
     }
 }
 

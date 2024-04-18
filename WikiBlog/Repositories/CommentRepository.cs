@@ -116,7 +116,7 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO, int userId)
+        public async Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO, int userId, bool isAdmin)
         {
             Comment? comment = await dbContextWikiBlog.Comments.FindAsync(id);
 
@@ -125,48 +125,54 @@ namespace WikiBlog.Repositories
                 return false;
             }
 
-            if (comment.UserId != userId)
+            if (comment.UserId == userId || isAdmin == true)
+            {
+                comment.Content = paramCommentDTO.Content;
+
+                try
+                {
+                    await dbContextWikiBlog.SaveChangesAsync();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            else
             {
                 return false;
             }
 
-            comment.Content = paramCommentDTO.Content;
 
-            try
-            {
-                await dbContextWikiBlog.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
         }
 
-        public async Task<bool?> DeleteComment(int id, int userId)
+        public async Task<bool?> DeleteComment(int id, int userId, bool isAdmin)
         {
-            try
+            Comment? comment = await dbContextWikiBlog.Comments.FirstOrDefaultAsync(c => c.Id == id);
+
+            if (comment == null)
             {
-                Comment? comment = await dbContextWikiBlog.Comments.FirstOrDefaultAsync(c => c.Id == id);
-
-                if (comment == null)
-                {
-                    return false;
-                }
-
-                if (comment.UserId != userId)
-                {
-                    return false;
-                }
-
-                dbContextWikiBlog.Comments.Remove(comment);
-                await dbContextWikiBlog.SaveChangesAsync();
-
-                return true;
+                return false;
             }
-            catch (Exception e)
+
+            if (comment.UserId == userId || isAdmin == true)
             {
-                throw e;
+                try
+                {
+                    dbContextWikiBlog.Comments.Remove(comment);
+                    await dbContextWikiBlog.SaveChangesAsync();
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 

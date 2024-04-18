@@ -149,7 +149,10 @@ namespace WikiBlog.Controllers
         {
             string? userConnectID = userManager.GetUserId(User);
 
-            bool? checkingUpdate = await commentRepository.UpdateComment(id, commentDTO, userRepository.GetUserId(userConnectID));
+            var appUser = await userManager.GetUserAsync(User);
+            bool isAdmin = await userManager.IsInRoleAsync(appUser, "ADMIN");
+
+            bool? checkingUpdate = await commentRepository.UpdateComment(id, commentDTO, userRepository.GetUserId(userConnectID), isAdmin);
 
             if (checkingUpdate == false)
             {
@@ -172,7 +175,10 @@ namespace WikiBlog.Controllers
         {
             string? userConnectID = userManager.GetUserId(User);
 
-            bool? checkingDelete = await commentRepository.DeleteComment(id, userRepository.GetUserId(userConnectID));
+            var appUser = await userManager.GetUserAsync(User);
+            bool isAdmin = await userManager.IsInRoleAsync(appUser, "ADMIN");
+
+            bool? checkingDelete = await commentRepository.DeleteComment(id, userRepository.GetUserId(userConnectID), isAdmin);
 
             if (checkingDelete == false)
             {
@@ -181,9 +187,5 @@ namespace WikiBlog.Controllers
 
             return Ok("Commentaire supprimé");
         }
-
-
-
-
     }
 }
