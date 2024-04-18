@@ -16,14 +16,14 @@ namespace WikiBlog.Repositories
             this.dbContextWikiBlog = dbContextWikiBlog;
         }
 
-        public async Task<bool> CreateComment(CreateCommentDTO commentDTO)
+        public async Task<bool> CreateComment(CreateCommentDTO commentDTO, int userId)
         {
             var comment = new Comment
             {
                 Content = commentDTO.Content,
                 CreationDate = DateTime.Now,
                 ArticleId = commentDTO.ArticleId,
-                UserId = 1
+                UserId = userId
             };
 
             try
@@ -116,11 +116,16 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO)
+        public async Task<bool?> UpdateComment(int id, UpdateCommentDTO paramCommentDTO, int userId)
         {
             Comment? comment = await dbContextWikiBlog.Comments.FindAsync(id);
 
             if (comment == null)
+            {
+                return false;
+            }
+
+            if (comment.UserId != userId)
             {
                 return false;
             }
@@ -138,13 +143,18 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> DeleteComment(int id)
+        public async Task<bool?> DeleteComment(int id, int userId)
         {
             try
             {
                 Comment? comment = await dbContextWikiBlog.Comments.FirstOrDefaultAsync(c => c.Id == id);
 
                 if (comment == null)
+                {
+                    return false;
+                }
+
+                if (comment.UserId != userId)
                 {
                     return false;
                 }

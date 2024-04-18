@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using WikiBlog.Const;
 using WikiBlog.DTOs.Articles;
 using WikiBlog.DTOs.Comments;
@@ -11,15 +13,18 @@ using WikiBlog.Repositories;
 namespace WikiBlog.Controllers
 {
     [Route("api/[controller]/[action]")]
+    [Authorize]
     [ApiController]
-    [Authorize(Roles = Roles.ADMIN)]
     public class CommentController : ControllerBase
     {
         private ICommentRepository commentRepository;
-
-        public CommentController(ICommentRepository commentRepository)
+        private UserManager<AppUser> userManager;
+        private IUserRepository userRepository;
+        public CommentController(ICommentRepository commentRepository, UserManager<AppUser> userManager, IUserRepository userRepository)
         {
             this.commentRepository = commentRepository;
+            this.userManager = userManager;
+            this.userRepository = userRepository;
         }
 
         /// <summary>
@@ -28,27 +33,31 @@ namespace WikiBlog.Controllers
         /// <param name="commentDTO">Commentaire</param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = $"{Roles.ADMIN}, {Roles.USERCONNECT}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
-        [ProducesResponseType(401)]
         public async Task<ActionResult> CreateComment(CreateCommentDTO commentDTO)
         {
-            bool checkingCreation = await commentRepository.CreateComment(commentDTO);
+            string? userConnectID = userManager.GetUserId(User);
+
+            bool checkingCreation = await commentRepository.CreateComment(commentDTO, userRepository.GetUserId(userConnectID));
 
             if (checkingCreation == false)
             {
                 return StatusCode(500);
             }
-
+           // [Authorize(Roles = $"{Roles.ADMIN}, {Roles.USERCONNECT}")]
             return Ok("Votre commentaire a bien été créé");
         }
+
+
 
         /// <summary>
         /// Récupération de la liste des commentaire avec leur auteur
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetAllComments()
@@ -69,6 +78,7 @@ namespace WikiBlog.Controllers
         /// <param name="id">int : Identifiant utilisateur</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetAllCommentByUser(int id)
@@ -89,6 +99,7 @@ namespace WikiBlog.Controllers
         /// <param name="id">int : Identifiant de l'article</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetAllCommentByArticle(int id)
@@ -109,6 +120,7 @@ namespace WikiBlog.Controllers
         /// <param name="id">int : identifiant du commentaire</param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(200)]
         [ProducesResponseType(204)]
         public async Task<ActionResult> GetCommentById(int id)
@@ -130,11 +142,14 @@ namespace WikiBlog.Controllers
         /// <param name="commentDTO"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{Roles.ADMIN}, {Roles.USERCONNECT}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
         public async Task<ActionResult> UpdateComment(int id, UpdateCommentDTO commentDTO)
         {
-            bool? checkingUpdate = await commentRepository.UpdateComment(id, commentDTO);
+            string? userConnectID = userManager.GetUserId(User);
+
+            bool? checkingUpdate = await commentRepository.UpdateComment(id, commentDTO, userRepository.GetUserId(userConnectID));
 
             if (checkingUpdate == false)
             {
@@ -150,11 +165,14 @@ namespace WikiBlog.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{Roles.ADMIN}, {Roles.USERCONNECT}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(500)]
         public async Task<ActionResult> DeleteComment(int id)
         {
-            bool? checkingDelete = await commentRepository.DeleteComment(id);
+            string? userConnectID = userManager.GetUserId(User);
+
+            bool? checkingDelete = await commentRepository.DeleteComment(id, userRepository.GetUserId(userConnectID));
 
             if (checkingDelete == false)
             {

@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 using System.Collections.Generic;
 using WikiBlog.Config;
 using WikiBlog.DTOs.Articles;
 using WikiBlog.DTOs.Comments;
+using WikiBlog.Enums;
 using WikiBlog.Interfaces.IRepositories;
 using WikiBlog.Models;
 
@@ -17,14 +19,14 @@ namespace WikiBlog.Repositories
             this.dbContextWikiBlog = dbContextWikiBlog;
         }
 
-        public async Task<bool> CreateArticle(CreateArticleDTO articleDTO)
+        public async Task<bool> CreateArticle(CreateArticleDTO articleDTO, int idUserConnect)
         {
             var article = new Article
             {
                 Title = articleDTO.Title,
                 Content = articleDTO.Content,
                 CreationDate = DateTime.Now,
-                UserId = 1,
+                UserId = idUserConnect,
                 ThemeId = articleDTO.ThemeId,
             };
 
@@ -47,6 +49,7 @@ namespace WikiBlog.Repositories
             {
                 List<Article> articles = await dbContextWikiBlog.Articles
                     .Include(t => t.Theme)
+                    .OrderByDescending(t => t.Priotity == Priotity.High)
                     .ToListAsync();
 
                 List<AllArticleDTO> articlesDTO = new List<AllArticleDTO>();
@@ -121,11 +124,17 @@ namespace WikiBlog.Repositories
             }
         }
 
-        public async Task<bool?> UpdateArticle(int id, UpdateArticleDTO paramArticleDTO)
+        public async Task<bool?> UpdateArticle(int id, UpdateArticleDTO paramArticleDTO, int userId, bool isAdmin)
         {
             Article? article = await dbContextWikiBlog.Articles.FindAsync(id);
 
+            // Comment faire pour retourner des erreurs plus explicites
             if (article == null)
+            {
+                return false;
+            }
+
+            if (article.UserId !=  userId || isAdmin == false)
             {
                 return false;
             }
@@ -147,15 +156,32 @@ namespace WikiBlog.Repositories
 
         }
 
-        public async Task<bool?> DeleteArticle(int id)
+        public async Task<bool?> DeleteArticle(int id, int userId, bool isAdmin)
         {
             try
             {
-                Article? article = await dbContextWikiBlog.Articles.FirstOrDefaultAsync(a => a.Id == id);
+                Article? article = await dbContextWikiBlog.Articles
+                    .Include(c => c.Comments)
+                    .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (article == null)
                 {
                     return false;
+                }
+
+                if (article.UserId != userId || isAdmin == false)
+                {
+                    return false;
+                }
+
+                List<Comment>? comments = article.Comments;
+
+                if (comments != null)
+                {
+                    foreach (var comment in comments)
+                    {
+                        dbContextWikiBlog.Comments.Remove(comment);
+                    }
                 }
 
                 dbContextWikiBlog.Articles.Remove(article);
@@ -168,5 +194,32 @@ namespace WikiBlog.Repositories
                 throw e;
             }
         }
+
+        public async Task<bool?> ChangePriorityArticle(int id, Priotity priotity)
+        {
+            Article? article = await dbContextWikiBlog.Articles.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (article == null) 
+            {
+                return false;
+            }
+
+            article.Priotity = priotity;
+
+            try
+            {
+                await dbContextWikiBlog.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+
+
+
     }
 }

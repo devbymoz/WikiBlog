@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WikiBlog.DTOs.Articles;
 using WikiBlog.DTOs.Themes;
@@ -10,6 +11,7 @@ namespace WikiBlog.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize(Roles = "ADMIN")]
     public class ThemeController : ControllerBase
     {
         private IThemeRepository themeRepository;
@@ -77,8 +79,6 @@ namespace WikiBlog.Controllers
 
             return Ok(theme);
         }
-
-
 
         /// <summary>
         /// Modification d'un thème

@@ -7,10 +7,5 @@ namespace WikiBlog.Models
         public string Name { get; set; }
 
         public List<Article>? Articles { get; set;}
-
-        internal object Select(Func<object, object> value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

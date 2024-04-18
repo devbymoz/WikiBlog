@@ -26,14 +26,14 @@ namespace WikiBlog.Config
             }
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            User user1 = new User { Id = 1 };
-            User user2 = new User { Id = 2 };
-            modelBuilder.Entity<User>().HasData(new List<User> { user1, user2 });
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    User user1 = new User { Id = 1 };
+        //    User user2 = new User { Id = 2 };
+        //    modelBuilder.Entity<User>().HasData(new List<User> { user1, user2 });
 
-            base.OnModelCreating(modelBuilder);
-        }
+        //    base.OnModelCreating(modelBuilder);
+        //}
 
 
     }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace WikiBlog.Models
 {
@@ -12,9 +13,11 @@ namespace WikiBlog.Models
         public string Content { get; set; }
 
         public int ArticleId { get; set; }
+        [DeleteBehavior(DeleteBehavior.NoAction)]
         public Article Article { get; set; }
 
         public int UserId { get; set; }
+        [DeleteBehavior(DeleteBehavior.NoAction)]
         public User User { get; set; }
     }
 }

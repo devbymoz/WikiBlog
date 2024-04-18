@@ -16,6 +16,3 @@ namespace WikiBlog.DTOs.Articles
         public List<AllCommentDTO>? CommentsDTO { get; set; }
     }
 }
-
-
-//Récupérer un article avec sa liste de commentaires et les infos de l’auteur de l’article, et pour chaque commentaire l’auteur du commentaire (email ou first name + id)
