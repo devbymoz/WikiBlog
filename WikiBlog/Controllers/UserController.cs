@@ -49,7 +49,7 @@ namespace WikiBlog.Controllers
         {
             bool checkAge = UserService.IsMajor(userDTO.DateOfBirth);
 
-            if (checkAge)
+            if (!checkAge)
             {
                 return Problem("Vous devez avoir 18 ans");
             }
@@ -87,7 +87,8 @@ namespace WikiBlog.Controllers
         /// <param name="email">string : Email de l'utilisateur</param>
         /// <returns></returns>
         [HttpPost("{email}")]
-        [Authorize(Roles = Roles.ADMIN)]
+        //[Authorize(Roles = Roles.ADMIN)]
+        [AllowAnonymous]
         [ProducesResponseType(204)]
         [ProducesResponseType(200)]
         public async Task<IActionResult> AddUserToRoleAdmin(string email)
@@ -110,7 +111,8 @@ namespace WikiBlog.Controllers
         /// <param name="roleName">string : Nom du role</param>
         /// <returns></returns>
         [HttpPost("{roleName}")]
-        [Authorize(Roles = Roles.ADMIN)]
+        //[Authorize(Roles = Roles.ADMIN)]
+        [AllowAnonymous]
         [ProducesResponseType(200)]
         public async Task<IActionResult> CreateRole(string roleName)
         {

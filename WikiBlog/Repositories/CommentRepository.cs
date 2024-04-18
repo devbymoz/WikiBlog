@@ -44,20 +44,23 @@ namespace WikiBlog.Repositories
             try
             {
                 List<Comment>? comments = await dbContextWikiBlog.Comments
-                    .Include(u => u.User)
+                    .Include(u => u.User.AppUser)
                     .ToListAsync();
 
                 List<AllCommentDTO> commentsDTO = new List<AllCommentDTO>();
 
-                foreach (var comment in comments)
+                if (comments != null)
                 {
-                    commentsDTO.Add(new AllCommentDTO
+                    foreach (var comment in comments)
                     {
-                        Id = comment.Id,
-                        Content = comment.Content,
-                        UserId= comment.UserId,
-                        UserName = comment.User.AppUser.UserName
-                    });
+                        commentsDTO.Add(new AllCommentDTO
+                        {
+                            Id = comment.Id,
+                            Content = comment.Content,
+                            UserId= comment.UserId,
+                            UserName = comment.User.AppUser.UserName
+                        });
+                    }
                 }
 
                 return commentsDTO;

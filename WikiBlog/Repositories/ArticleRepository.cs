@@ -80,8 +80,9 @@ namespace WikiBlog.Repositories
             try
             {
                 Article? article = await dbContextWikiBlog.Articles
-                    .Include(u => u.User)
+                    .Include(u => u.User.AppUser)
                     .Include(c => c.Comments)
+                    .Include(t => t.Theme)
                     .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (article == null)
@@ -109,9 +110,9 @@ namespace WikiBlog.Repositories
                     Title = article.Title,
                     Content = article.Content,
                     Priotity = article.Priotity,
-                    AuthorArticleId = article.UserId,
+                    AuthorArticleId = article.User.Id,
                     AuthorArticleName = article.User.AppUser.UserName,
-                    Theme = article.Theme,
+                    ThemeName = article.Theme.Name,
                     CommentsDTO = articleComments
                 };
 

@@ -10,7 +10,9 @@ namespace WikiBlog.Services
     {
         public static bool IsMajor(DateTime date)
         {
-            if (date.AddYears(18) > DateTime.Now)
+            int age = DateTime.Now.Year - date.Year;
+
+            if (age < 18)
             {
                 return false;
             }
